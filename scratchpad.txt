@@ -1,0 +1,67 @@
+function locateBox(index, element)
+{
+	// element should have gridwide, gridtall properties
+	gridWide = 1; gridTall = 1;
+	if(element.getAttribute("gridwide"))
+		gridWide = parseInt(element.getAttribute("gridwide"));
+	else
+		element.setAttribute("gridwide",gridWide);
+	if(element.getAttribute("gridtall"))
+		gridTall = parseInt(element.getAttribute("gridtall"));
+	else
+		element.setAttribute("gridtall",gridTall);
+	// check if wider or taller than grid
+	if(gridTall > grid.gridHeight)
+		gridTall = parseInt(grid.gridHeight);
+	if(gridWide > grid.gridWidth)
+		gridWide = parseInt(grid.gridWidth);
+
+	// grab the total number of boxes so we know if we need to leave space or not
+	numBoxes = $(".box").length;
+	// check how much space we've got left horizontally, allowing for margins
+	ratio = (grid.gridWidth - currentX);
+	ratio = ratio / (gridWide + 2);
+	
+	if(ratio > 1)
+	{
+		//we're good... now, to the left or to the right?
+		if(ratio > 2)
+		{
+			// room to rattle, let's stay to the left
+			element.gridX = currentX + 1;
+			element.gridY = currentY;
+			currentX = currentX + gridWide + 1;
+			if((currentY + gridTall) > maxY) maxY = currentY + gridTall;
+		}
+		else
+		{
+			// not much space, let's go right and increment
+			element.gridX = grid.gridWidth - (gridWide + 2);
+			element.gridY = currentY;
+			currentX = 0;
+			if((currentY + gridTall) > maxY) maxY = currentY + gridTall;
+			currentY = maxY;
+			maxY = currentY + gridTall;
+		}
+	}
+	else
+	{
+		// not enough room for us in the row, so next row
+		element.gridX = 1;
+		element.gridY = maxY;
+		currentY = maxY + gridTall;
+		currentX = gridWide + 2;
+	}
+	// mark up the grid spaces we cover as having value 15 ( = solid)
+	for(x = element.gridX;x < element.gridX + gridWide;x++)
+		for(y = element.gridY;y<element.gridY + gridTall;y++)
+		{
+			index = y * grid.gridWidth + x;
+			grid[index] = 15;
+		}
+	// put the box in the right place
+	element.style.left = element.gridX * grid.cellWidth + "px";
+	element.style.width = gridWide * grid.cellWidth + "px";
+	element.style.top = element.gridY * grid.cellHeight + "px";
+	element.style.height = gridTall * grid.cellHeight + "px";
+}
